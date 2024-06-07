@@ -1,19 +1,18 @@
-<<<<<<< HEAD
 # **Samsung Phone Specification Categorizer**
----
+
 <img src="https://github.com/Misfit911/Samsung-Phone-Specification-Categorizer/assets/127237815/ee873031-85dc-4d6b-834d-2774174a038a" width="1100" height="500">
 
 ##### Author: Bradley Ouko
 ---
 
 # **Overview**
----
+
 By addressing the real-world challenge of understanding mobile phone success factors and setting an affordable price, Samsung can enhance its market position and customer satisfaction. The choice of the Spec_score_binary as the target variable aligns well with the project goals.
 
 The evaluation results indicate strong model performance, especially with the decision tree and random forest classifiers. The perfect accuracy achieved by these models suggests that they are suitable for predicting whether a phone is high-spec or low-spec. The implications for Samsung include optimizing marketing strategies, resource allocation, and overall customer satisfaction.
 
 # **Business Understanding**
----
+
 # **Business Problem**
 Samsung wants to launch a new product in the market. As a data scientist working for Samsung, I have been tasked to gain valuable insights from the dataset related to mobile phones. That way, it can gain an understanding of the factors that contribute to a phone’s success or failure and hence set an affordable price that will increase sales. The goal is to drive sales up📈 by offering a high spec product at an affordable price. Samsung wants to know which features will cost less to produce and have a high profit margin as well as when sold.
 
@@ -37,7 +36,7 @@ Samsung wants to launch a new product in the market. As a data scientist working
 The project’s implications lie in improving Samsung’s competitiveness, understanding customer preferences, and driving innovation. By addressing this problem, Samsung is able to enhance user experiences and hence its success.✅
 
 # **Data Understanding**
----
+
 
 ## **Dataset Suitability**
 The dataset is suitable for the project because it contains relevant information about mobile phones, including specifications, ratings, prices, and features. It covers various aspects that impact a phone’s success in the market.
@@ -259,7 +258,7 @@ load.dataframe_details(data)
     
 
 # **Data Preparation**
----
+
 ## **Data Cleaning**
 
 ### Dealing with missing values
@@ -379,13 +378,13 @@ eda.plot_histograms(data, numeric_cols)
 
 
     
-![png](uno_files/uno_19_0.png)
+![png](dos_files/dos_19_0.png)
     
 
 
 
     
-![png](uno_files/uno_19_1.png)
+![png](dos_files/dos_19_1.png)
     
 
 
@@ -401,7 +400,7 @@ eda.plot_countplots(data, relevant_cols)
 
 
     
-![png](uno_files/uno_21_0.png)
+![png](dos_files/dos_21_0.png)
     
 
 
@@ -421,43 +420,43 @@ eda.check_normal_distribution(data, exclude_columns=exclude)
 
 
     
-![png](uno_files/uno_22_0.png)
+![png](dos_files/dos_22_0.png)
     
 
 
 
     
-![png](uno_files/uno_22_1.png)
+![png](dos_files/dos_22_1.png)
     
 
 
 
     
-![png](uno_files/uno_22_2.png)
+![png](dos_files/dos_22_2.png)
     
 
 
 
     
-![png](uno_files/uno_22_3.png)
+![png](dos_files/dos_22_3.png)
     
 
 
 
     
-![png](uno_files/uno_22_4.png)
+![png](dos_files/dos_22_4.png)
     
 
 
 
     
-![png](uno_files/uno_22_5.png)
+![png](dos_files/dos_22_5.png)
     
 
 
 
     
-![png](uno_files/uno_22_6.png)
+![png](dos_files/dos_22_6.png)
     
 
 
@@ -513,7 +512,7 @@ else:
 
 
     
-![png](uno_files/uno_27_1.png)
+![png](dos_files/dos_27_1.png)
     
 
 
@@ -539,7 +538,7 @@ else:
 
 
     
-![png](uno_files/uno_28_1.png)
+![png](dos_files/dos_28_1.png)
     
 
 
@@ -565,12 +564,11 @@ else:
 
 
     
-![png](uno_files/uno_29_1.png)
+![png](dos_files/dos_29_1.png)
     
 
 
 # **Data Modelling**
----
 
 
 *Drop columns for modelling purposes*
@@ -822,26 +820,26 @@ mod.modelplotting_evaluation(X_train_resampled, X_test, y_train_resampled, y_tes
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 31   3]
+     [[ 30   4]
      [ 13 364]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       0.70      0.91      0.79        34
+               0       0.70      0.88      0.78        34
                1       0.99      0.97      0.98       377
     
         accuracy                           0.96       411
-       macro avg       0.85      0.94      0.89       411
+       macro avg       0.84      0.92      0.88       411
     weighted avg       0.97      0.96      0.96       411
     
-    Accuracy: 0.9610705596107056
-    Precision: 0.9918256130790191
+    Accuracy: 0.9586374695863747
+    Precision: 0.9891304347826086
     Recall: 0.9655172413793104
-    F1 score: 0.9784946236559139
+    F1 score: 0.9771812080536914
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.90816327 0.94557823 0.95238095 0.94880546 0.96928328]
-    Mean CV Accuracy: 0.9448422372361913
+    Cross-Validation Scores: [0.91156463 0.94897959 0.95238095 0.94197952 0.97952218]
+    Mean CV Accuracy: 0.9468853753105337
     
     --------------------------------------------------------------------------------
     Model: DecisionTreeClassifier(random_state=42)
@@ -892,34 +890,34 @@ mod.modelplotting_evaluation(X_train_resampled, X_test, y_train_resampled, y_tes
     F1 score: 1.0
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.99319728 1.         1.         1.         1.        ]
-    Mean CV Accuracy: 0.9986394557823128
+    Cross-Validation Scores: [0.99659864 1.         1.         1.         1.        ]
+    Mean CV Accuracy: 0.9993197278911564
     
     --------------------------------------------------------------------------------
     Model: KNeighborsClassifier()
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 23  11]
-     [ 42 335]]
+     [[ 25   9]
+     [ 48 329]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       0.35      0.68      0.46        34
-               1       0.97      0.89      0.93       377
+               0       0.34      0.74      0.47        34
+               1       0.97      0.87      0.92       377
     
-        accuracy                           0.87       411
-       macro avg       0.66      0.78      0.70       411
-    weighted avg       0.92      0.87      0.89       411
+        accuracy                           0.86       411
+       macro avg       0.66      0.80      0.69       411
+    weighted avg       0.92      0.86      0.88       411
     
-    Accuracy: 0.8710462287104623
-    Precision: 0.9682080924855492
-    Recall: 0.8885941644562334
-    F1 score: 0.9266943291839558
+    Accuracy: 0.8613138686131386
+    Precision: 0.9733727810650887
+    Recall: 0.8726790450928382
+    F1 score: 0.9202797202797203
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.8537415  0.83333333 0.88095238 0.84982935 0.90443686]
-    Mean CV Accuracy: 0.8644586844976899
+    Cross-Validation Scores: [0.8537415  0.82653061 0.89795918 0.82935154 0.87372014]
+    Mean CV Accuracy: 0.8562605929743912
     
     --------------------------------------------------------------------------------
     
@@ -956,10 +954,10 @@ mod.modelplotting_evaluation(X_train_resampled, X_test, y_train_resampled, y_tes
     <tr>
       <th>0</th>
       <td>LogisticRegression(random_state=42)</td>
-      <td>0.961071</td>
+      <td>0.958637</td>
       <td>0.965517</td>
-      <td>0.991826</td>
-      <td>0.978495</td>
+      <td>0.989130</td>
+      <td>0.977181</td>
     </tr>
     <tr>
       <th>1</th>
@@ -980,10 +978,10 @@ mod.modelplotting_evaluation(X_train_resampled, X_test, y_train_resampled, y_tes
     <tr>
       <th>3</th>
       <td>KNeighborsClassifier()</td>
-      <td>0.871046</td>
-      <td>0.888594</td>
-      <td>0.968208</td>
-      <td>0.926694</td>
+      <td>0.861314</td>
+      <td>0.872679</td>
+      <td>0.973373</td>
+      <td>0.920280</td>
     </tr>
   </tbody>
 </table>
@@ -1000,7 +998,7 @@ mod.plot_roc_curves(models,X_train_resampled, y_train_resampled, X_test, y_test)
 
 
     
-![png](uno_files/uno_44_0.png)
+![png](dos_files/dos_44_0.png)
     
 
 
@@ -1195,12 +1193,12 @@ mod.plot_roc_curves(models, X_train, y_train, X_test, y_test)
 
 
     
-![png](uno_files/uno_47_0.png)
+![png](dos_files/dos_47_0.png)
     
 
 
 # **Evaluation**
----
+
 ### **Base Model - Phone Specification Categorizer (High-Spec or Low-Spec)**
 ---
 * The base model includes `logistic regression`, `decision tree`, `random forest`, and `k-neighbors classifiers`.
@@ -1239,11 +1237,3 @@ mod.plot_roc_curves(models, X_train, y_train, X_test, y_test)
     - Enhance customer satisfaction by focusing on key features.
 
 
-=======
-# Samsung Phone Specification Categorizer
-<p align="center">
-  <img src="https://github.com/Misfit911/Samsung-Phone-Specification-Categorizer/assets/127237815/ee873031-85dc-4d6b-834d-2774174a038a" width="900" height="450">
-</p>
-<p align="center"></p>
-This repository aims to address the challenge of understanding mobile phone success factors and setting an affordable price for the Samsung customers.
->>>>>>> 814e71056d69f47057c8fd8750e35123d2457191
