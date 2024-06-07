@@ -82,11 +82,18 @@ class DataPreprocessing(DataSourcing):
         
     def check_null_values(self, data):
         null_values = data.isnull().sum()
-        print(null_values)
-        print("=" * 40)
-        print("List of columns with missing values:")
-        print("=" * 40)
-        return null_values[null_values > 0].index.tolist()
+        total_null_values = data.isnull().sum().sum()
+        if total_null_values > 0:  
+            print(null_values)
+            print()
+            print("Total number of null values in the data:", total_null_values)
+            print() 
+            print("=" * 40)
+            print("List of columns with missing values:")
+            print("=" * 40)      
+            return null_values[null_values > 0].index.tolist()
+        else:
+            print("There are no null values in the data.")
 
     # Drop columns no longer applicable
     def drop_columns(self, data, columns):
@@ -121,7 +128,6 @@ class DataPreprocessing(DataSourcing):
         data[missing_numeric_cols] = numeric_imputer.fit_transform(data[missing_numeric_cols])
         data[missing_object_cols] = object_imputer.fit_transform(data[missing_object_cols])
 
-        return data.isna().sum()
 
     def create_rating_category(self, data):
         data['Rating_binary'] = (data['Rating'] >= 4).astype(int)
@@ -171,7 +177,7 @@ class DataAnalysis(DataPreprocessing,DataSourcing):
 
         for i, column in enumerate(relevant_cols, 1):
             plt.subplot(num_rows, num_columns, i)
-            sns.countplot(x=data[column])
+            sns.countplot(x=data[column], palette='mako')
             plt.title(f'{column.capitalize()}')
             plt.xlabel(column)
             plt.ylabel('Count')
@@ -188,7 +194,7 @@ class DataAnalysis(DataPreprocessing,DataSourcing):
             if data[col].dtype == 'object' or data[col].nunique() < 20:
                 # If the column is categorical or has less than 20 unique values, use countplot
                 custom_palette = ["blue", "orange", "green", "red", "purple", "brown"]
-                sns.countplot(data=data, x=col, palette=custom_palette)
+                sns.countplot(data=data, x=col, palette='mako')
                 plt.title(f"Distribution of '{col}'")
                 plt.xlabel(col)
                 plt.ylabel('Count')
