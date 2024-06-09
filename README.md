@@ -1,4 +1,4 @@
-# **Samsung Phone Specification Categorizer**
+# **Samsung Phone Specification Classifier**
 
 <img src="https://github.com/Misfit911/Samsung-Phone-Specification-Categorizer/assets/127237815/ee873031-85dc-4d6b-834d-2774174a038a" width="1100" height="500">
 
@@ -12,9 +12,9 @@ By addressing the real-world challenge of understanding mobile phone success fac
 The evaluation results indicate strong model performance, especially with the decision tree and random forest classifiers. The perfect accuracy achieved by these models suggests that they are suitable for predicting whether a phone is high-spec or low-spec. The implications for Samsung include optimizing marketing strategies, resource allocation, and overall customer satisfaction.
 
 # **Business Understanding**
-
+---
 # **Business Problem**
-Samsung wants to launch a new product in the market. As a data scientist working for Samsung, I have been tasked to gain valuable insights from the dataset related to mobile phones. That way, it can gain an understanding of the factors that contribute to a phone’s success or failure and hence set an affordable price that will increase sales. The goal is to drive sales up📈 by offering a high spec product at an affordable price. Samsung wants to know which features will cost less to produce and have a high profit margin as well as when sold.
+Samsung wants to launch a new product in the market. As a data scientist working for Samsung, I have been tasked to gain valuable insights from the dataset related to mobile phones. That way, it can gain an understanding of the factors that contribute to a phone’s success or failure and hence set an affordable price that will increase sales. The goal is to drive sales up📈 by offering a high spec product at an affordable price. Samsung wants to know which features will cost less to produce and have a high profit margin as well when sold.
 
 ## **Stakeholders**
 1. **Samsung Product Team:**
@@ -36,7 +36,7 @@ Samsung wants to launch a new product in the market. As a data scientist working
 The project’s implications lie in improving Samsung’s competitiveness, understanding customer preferences, and driving innovation. By addressing this problem, Samsung is able to enhance user experiences and hence its success.✅
 
 # **Data Understanding**
-
+---
 
 ## **Dataset Suitability**
 The dataset is suitable for the project because it contains relevant information about mobile phones, including specifications, ratings, prices, and features. It covers various aspects that impact a phone’s success in the market.
@@ -103,10 +103,11 @@ Create a machine learning model that predicts the specification rating based on 
 #import necessary modules
 import pandas as pd
 import numpy as np
+import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Import necessary modules for df for Modelling
+# Import necessary modules for Modelling
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -258,42 +259,92 @@ load.dataframe_details(data)
     
 
 # **Data Preparation**
-
+---
 ## **Data Cleaning**
 
-### Dealing with missing values
-*Check for missing values*
+*Feature Engineering* & *Encoding Columns*
 
 
 ```python
 # Initialize data preprocessing
 dp = DataPreprocessing()
 
+# Convert 'Rating' to binary (good/bad) based on a 
+# threshold (4 stars or higher = good)
+dp.create_rating_category(data)
+
+# Convert 'Spec_score' to binary (high-spec/low-spec)
+# based on a threshold (high-spec >= 70)
+dp.create_spec_score_category(data)
+
+# Convert 'Price' to binary (affordable/expensive) 
+# based on a threshold (expensive >= upper quartile price)
+dp.create_price_category(data)
+
+# Create the Company categories: Samsung, Other Brands
+dp.create_company_category(data)
+
+# Convert versions to numeric and create new column: version_category
+dp.create_version_category(data)
+
+# Convert column values to binary: Supports fast charging, Does not support fast charging
+dp.create_fast_charging_column(data)
+
+# Convert Display to numeric and create new column: display_size_inches
+dp.convert_display_to_numeric(data)
+
+# Convert Battery to numeric and create new column: Battery_numeric
+dp.convert_battery_to_numeric(data)
+
+# Filters unwanted values in RAM
+dp.filter_ram_values(data)
+
+
+```
+
+### Dealing with missing values
+*Check for missing values*
+
+
+```python
 # Use the methods to perform the desired data processing tasks
 dp.check_null_values(data)
 ```
 
-    Index                  0
-    Name                   0
-    Rating                 0
-    Spec_score             0
-    No_of_sim              0
-    Ram                    0
-    Battery                0
-    Display                0
-    Camera                 0
-    External_Memory        0
-    Android_version      443
-    Price                  0
-    company                0
-    Inbuilt_memory        19
-    fast_charging         89
-    Screen_resolution      2
-    Processor             28
-    Processor_name         0
+    Index                        0
+    Name                         0
+    Rating                       0
+    Spec_score                   0
+    No_of_sim                    0
+    Ram                          0
+    Battery                      0
+    Display                      0
+    Camera                       0
+    External_Memory              0
+    Android_version            443
+    Price                        0
+    company                      0
+    Inbuilt_memory              19
+    fast_charging                0
+    Screen_resolution            2
+    Processor                   28
+    Processor_name               0
+    Rating_binary                0
+    rating_category              0
+    Spec_score_binary            0
+    Spec_score_category          0
+    Price_binary                 0
+    Price_category               0
+    Company_category             0
+    Android_version_cleaned    443
+    Android_version_numeric    443
+    Version_category             0
+    Display_size_inches         16
+    Battery_numeric              1
+    filtered_ram                20
     dtype: int64
     
-    Total number of null values in the data: 581
+    Total number of null values in the data: 1415
     
     ========================================
     List of columns with missing values:
@@ -305,9 +356,13 @@ dp.check_null_values(data)
 
     ['Android_version',
      'Inbuilt_memory',
-     'fast_charging',
      'Screen_resolution',
-     'Processor']
+     'Processor',
+     'Android_version_cleaned',
+     'Android_version_numeric',
+     'Display_size_inches',
+     'Battery_numeric',
+     'filtered_ram']
 
 
 
@@ -315,12 +370,7 @@ dp.check_null_values(data)
 
 
 ```python
-# Before imputing we first clean up the columns with missing values
-# to get the values to impute with
-dp.create_version_category(data)
-dp.create_fast_charging_column(data)
-
-# Impute using the mean and most_frequent starategies
+# Impute using the mean and most_frequent strategies
 dp.impute_missing_values(data)
 dp.check_null_values(data)
 ```
@@ -338,25 +388,183 @@ dp.check_duplicates(data)
     There are 0 duplicates in the data.
     
 
-*Feature Engineering* & *Encoding Columns*
-
 
 ```python
-# Convert 'Rating' to binary (good/bad) based on a 
-# threshold (4 stars or higher = good)
-dp.create_rating_category(data)
-
-# Convert 'Spec_score' to binary (high-spec/low-spec)
-# based on a threshold (high-spec >= 70)
-dp.create_spec_score_category(data)
-
-# Convert 'Price' to binary (affordable/expensive) 
-# based on a threshold (e.g., median price)
-dp.create_price_category(data)
-
-# Create the Company categories: Samsung, Other Brands
-dp.create_company_category(data)
+# Visualize the dataframe
+data.head()
 ```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Index</th>
+      <th>Name</th>
+      <th>Rating</th>
+      <th>Spec_score</th>
+      <th>No_of_sim</th>
+      <th>Ram</th>
+      <th>Battery</th>
+      <th>Display</th>
+      <th>Camera</th>
+      <th>External_Memory</th>
+      <th>...</th>
+      <th>Spec_score_category</th>
+      <th>Price_binary</th>
+      <th>Price_category</th>
+      <th>Company_category</th>
+      <th>Android_version_cleaned</th>
+      <th>Android_version_numeric</th>
+      <th>Version_category</th>
+      <th>Display_size_inches</th>
+      <th>Battery_numeric</th>
+      <th>filtered_ram</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>Samsung Galaxy F14 5G</td>
+      <td>4.65</td>
+      <td>68</td>
+      <td>Dual Sim, 3G, 4G, 5G, VoLTE,</td>
+      <td>4 GB RAM</td>
+      <td>6000 mAh Battery</td>
+      <td>6.6 inches</td>
+      <td>50 MP + 2 MP Dual Rear &amp;amp; 13 MP Front Camera</td>
+      <td>Memory Card Supported, upto 1 TB</td>
+      <td>...</td>
+      <td>Low-Spec</td>
+      <td>1</td>
+      <td>Affordable</td>
+      <td>Samsung</td>
+      <td>13</td>
+      <td>13.0</td>
+      <td>Android 11+</td>
+      <td>6.6</td>
+      <td>6000.0</td>
+      <td>4 GB RAM</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>Samsung Galaxy A11</td>
+      <td>4.20</td>
+      <td>63</td>
+      <td>Dual Sim, 3G, 4G, VoLTE,</td>
+      <td>2 GB RAM</td>
+      <td>4000 mAh Battery</td>
+      <td>6.4 inches</td>
+      <td>13 MP + 5 MP + 2 MP Triple Rear &amp;amp; 8 MP Fro...</td>
+      <td>Memory Card Supported, upto 512 GB</td>
+      <td>...</td>
+      <td>Low-Spec</td>
+      <td>1</td>
+      <td>Affordable</td>
+      <td>Samsung</td>
+      <td>10</td>
+      <td>10.0</td>
+      <td>Older Versions</td>
+      <td>6.4</td>
+      <td>4000.0</td>
+      <td>2 GB RAM</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2</td>
+      <td>Samsung Galaxy A13</td>
+      <td>4.30</td>
+      <td>75</td>
+      <td>Dual Sim, 3G, 4G, VoLTE,</td>
+      <td>4 GB RAM</td>
+      <td>5000 mAh Battery</td>
+      <td>6.6 inches</td>
+      <td>50 MP Quad Rear &amp;amp; 8 MP Front Camera</td>
+      <td>Memory Card Supported, upto 1 TB</td>
+      <td>...</td>
+      <td>Low-Spec</td>
+      <td>1</td>
+      <td>Affordable</td>
+      <td>Samsung</td>
+      <td>12</td>
+      <td>12.0</td>
+      <td>Android 11+</td>
+      <td>6.6</td>
+      <td>5000.0</td>
+      <td>4 GB RAM</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3</td>
+      <td>Samsung Galaxy F23</td>
+      <td>4.10</td>
+      <td>73</td>
+      <td>Dual Sim, 3G, 4G, VoLTE,</td>
+      <td>4 GB RAM</td>
+      <td>6000 mAh Battery</td>
+      <td>6.4 inches</td>
+      <td>48 MP Quad Rear &amp;amp; 13 MP Front Camera</td>
+      <td>Memory Card Supported, upto 1 TB</td>
+      <td>...</td>
+      <td>Low-Spec</td>
+      <td>1</td>
+      <td>Affordable</td>
+      <td>Samsung</td>
+      <td>12</td>
+      <td>12.0</td>
+      <td>Android 11+</td>
+      <td>6.4</td>
+      <td>6000.0</td>
+      <td>4 GB RAM</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4</td>
+      <td>Samsung Galaxy A03s (4GB RAM + 64GB)</td>
+      <td>4.10</td>
+      <td>69</td>
+      <td>Dual Sim, 3G, 4G, VoLTE,</td>
+      <td>4 GB RAM</td>
+      <td>5000 mAh Battery</td>
+      <td>6.5 inches</td>
+      <td>13 MP + 2 MP + 2 MP Triple Rear &amp;amp; 5 MP Fro...</td>
+      <td>Memory Card Supported, upto 1 TB</td>
+      <td>...</td>
+      <td>Low-Spec</td>
+      <td>1</td>
+      <td>Affordable</td>
+      <td>Samsung</td>
+      <td>11</td>
+      <td>11.0</td>
+      <td>Android 11+</td>
+      <td>6.5</td>
+      <td>5000.0</td>
+      <td>4 GB RAM</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 31 columns</p>
+</div>
+
+
 
 # **Data Analysis**
 ---
@@ -372,19 +580,21 @@ numeric_columns = data.select_dtypes(include=['int64', 'float64']).columns
 categorical_columns = data.select_dtypes(include=['object', 'bool']).columns
 numeric_col_li = data.select_dtypes(include=['int64', 'float64']).columns.to_list()
 numeric_cols = [col for col in numeric_col_li if col != 'Index']
+
+# Display plots for numeric columns
 eda.plot_boxplots(data, numeric_cols)
 eda.plot_histograms(data, numeric_cols)
 ```
 
 
     
-![png](dos_files/dos_19_0.png)
+![png](student_files/student_20_0.png)
     
 
 
 
     
-![png](dos_files/dos_19_1.png)
+![png](student_files/student_20_1.png)
     
 
 
@@ -400,63 +610,75 @@ eda.plot_countplots(data, relevant_cols)
 
 
     
-![png](dos_files/dos_21_0.png)
+![png](student_files/student_22_0.png)
     
 
 
 
 ```python
 # List of columns to exclude
-exclude = ['Index', 'fast_charging', 'Version_category', 'Company_category',
+exclude = ['Index','Ram', 'Android_version', 'fast_charging', 'Version_category', 'Company_category',
             'Rating', 'Spec_score', 'Android_version_numeric', 'Name',
             'Battery', 'Display', 'Camera', 'External_Memory', 'Screen_resolution',
             'Processor_name', 'Price_binary', 'Spec_score_binary', 'Rating_binary',
             'Spec_score_category', 'rating_category','Price_category', 'Android_version_cleaned']
 
 # Call the function with the DataFrame and the list of columns to exclude
-eda.check_normal_distribution(data, exclude_columns=exclude)
+eda.check_distribution(data, exclude_columns=exclude)
 
 ```
 
 
     
-![png](dos_files/dos_22_0.png)
+![png](student_files/student_23_0.png)
     
 
 
 
     
-![png](dos_files/dos_22_1.png)
+![png](student_files/student_23_1.png)
     
 
 
 
     
-![png](dos_files/dos_22_2.png)
+![png](student_files/student_23_2.png)
     
 
 
 
     
-![png](dos_files/dos_22_3.png)
+![png](student_files/student_23_3.png)
     
 
 
 
     
-![png](dos_files/dos_22_4.png)
+![png](student_files/student_23_4.png)
     
 
 
 
     
-![png](dos_files/dos_22_5.png)
+![png](student_files/student_23_5.png)
     
 
 
 
     
-![png](dos_files/dos_22_6.png)
+![png](student_files/student_23_6.png)
+    
+
+
+
+    
+![png](student_files/student_23_7.png)
+    
+
+
+
+    
+![png](student_files/student_23_8.png)
     
 
 
@@ -476,15 +698,40 @@ new_data.columns
 
 
 
-    Index(['Index', 'Name', 'Rating', 'Spec_score', 'Display', 'Camera',
-           'External_Memory', 'Android_version', 'Price', 'fast_charging',
-           ...
-           'Processor_ 2 GHz Processor', 'Processor_ 2.3 GHz Processor',
-           'Processor_ Deca Core', 'Processor_ Deca Core Processor',
-           'Processor_ Nine Core', 'Processor_ Nine Cores',
-           'Processor_ Nine-Cores', 'Processor_ Octa Core',
-           'Processor_ Octa Core Processor', 'Processor_ Quad Core'],
-          dtype='object', length=187)
+    Index(['Index', 'Name', 'Rating', 'Spec_score', 'Battery', 'Display', 'Camera',
+           'External_Memory', 'Android_version', 'Price', 'company',
+           'fast_charging', 'Screen_resolution', 'Processor_name', 'Rating_binary',
+           'rating_category', 'Spec_score_binary', 'Spec_score_category',
+           'Price_binary', 'Price_category', 'Android_version_cleaned',
+           'Android_version_numeric', 'Version_category', 'Display_size_inches',
+           'Battery_numeric', 'filtered_ram', 'No_of_sim_Dual Sim, 3G, 4G, ',
+           'No_of_sim_Dual Sim, 3G, 4G, 5G, VoLTE, ',
+           'No_of_sim_Dual Sim, 3G, 4G, 5G, VoLTE, Vo5G, ',
+           'No_of_sim_Dual Sim, 3G, 4G, VoLTE, ',
+           'No_of_sim_Dual Sim, 3G, VoLTE, ', 'No_of_sim_No Sim Supported, ',
+           'No_of_sim_Single Sim, 3G, 4G, 5G, VoLTE, ',
+           'No_of_sim_Single Sim, 3G, 4G, 5G, VoLTE, Vo5G, ',
+           'No_of_sim_Single Sim, 3G, 4G, VoLTE, ', 'Ram_1 GB RAM',
+           'Ram_1.5 GB RAM', 'Ram_12 GB RAM', 'Ram_128 GB inbuilt',
+           'Ram_16 GB RAM', 'Ram_18 GB RAM', 'Ram_2 GB RAM', 'Ram_24 GB RAM',
+           'Ram_256 GB inbuilt', 'Ram_3 GB RAM', 'Ram_4 GB RAM',
+           'Ram_512 GB inbuilt', 'Ram_6 GB RAM',
+           'Ram_6000 mAh Battery with 22.5W Fast Charging', 'Ram_8 GB RAM',
+           'Ram_Helio G90T', 'Company_category_Other Brands',
+           'Company_category_Samsung', 'Inbuilt_memory_ 1 TB inbuilt',
+           'Inbuilt_memory_ 128 GB inbuilt', 'Inbuilt_memory_ 16 GB inbuilt',
+           'Inbuilt_memory_ 256 GB inbuilt', 'Inbuilt_memory_ 258 GB inbuilt',
+           'Inbuilt_memory_ 32 GB inbuilt', 'Inbuilt_memory_ 512 GB inbuilt',
+           'Inbuilt_memory_ 64 GB inbuilt', 'Inbuilt_memory_ 8 GB inbuilt',
+           'Inbuilt_memory_ Octa Core', 'Processor_ 1.3 GHz Processor',
+           'Processor_ 1.6 GHz Processor', 'Processor_ 1.8 GHz Processor',
+           'Processor_ 128 GB inbuilt', 'Processor_ 2 GHz Processor',
+           'Processor_ 2.3 GHz Processor', 'Processor_ Deca Core',
+           'Processor_ Deca Core Processor', 'Processor_ Nine Core',
+           'Processor_ Nine Cores', 'Processor_ Nine-Cores',
+           'Processor_ Octa Core', 'Processor_ Octa Core Processor',
+           'Processor_ Quad Core'],
+          dtype='object')
 
 
 
@@ -492,83 +739,233 @@ new_data.columns
 
 
 ```python
-column_of_interest = 'Spec_score_binary'
-spec_score_binary_corr = eda.correlation(new_data, column=column_of_interest, rank=False)
-
-# Plotting the heatmap
-if spec_score_binary_corr is not None:
-    fig, ax = plt.subplots(figsize=(8, 15))
-    sns.heatmap(spec_score_binary_corr.to_frame().sort_values(by=column_of_interest, ascending=False), annot=False, ax=ax)
-    ax.set_title(f'Variables Correlating with {column_of_interest}')
-    plt.show()
-else:
-    print(f'Correlation calculation failed for column: {column_of_interest}')
+eda.correlation(data)
 ```
 
     The following columns were dropped due to being object types:
-    ['Name', 'Display', 'Camera', 'External_Memory', 'Android_version', 'fast_charging', 'Screen_resolution', 'Processor_name', 'Android_version_cleaned', 'Version_category', 'rating_category', 'Spec_score_category', 'Price_category']
+    ['Name', 'No_of_sim', 'Ram', 'Battery', 'Display', 'Camera', 'External_Memory', 'Android_version', 'company', 'Inbuilt_memory', 'fast_charging', 'Screen_resolution', 'Processor', 'Processor_name', 'rating_category', 'Spec_score_category', 'Price_category', 'Company_category', 'Android_version_cleaned', 'Version_category', 'filtered_ram']
+    
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Index</th>
+      <th>Rating</th>
+      <th>Spec_score</th>
+      <th>Price</th>
+      <th>Rating_binary</th>
+      <th>Spec_score_binary</th>
+      <th>Price_binary</th>
+      <th>Android_version_numeric</th>
+      <th>Display_size_inches</th>
+      <th>Battery_numeric</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Index</th>
+      <td>1.000000</td>
+      <td>0.026233</td>
+      <td>-0.044236</td>
+      <td>-0.076589</td>
+      <td>0.041443</td>
+      <td>-0.086762</td>
+      <td>0.050750</td>
+      <td>-0.049842</td>
+      <td>-0.001671</td>
+      <td>0.018930</td>
+    </tr>
+    <tr>
+      <th>Rating</th>
+      <td>0.026233</td>
+      <td>1.000000</td>
+      <td>0.056510</td>
+      <td>0.004403</td>
+      <td>0.852661</td>
+      <td>0.035216</td>
+      <td>0.004276</td>
+      <td>0.043829</td>
+      <td>0.046106</td>
+      <td>0.087285</td>
+    </tr>
+    <tr>
+      <th>Spec_score</th>
+      <td>-0.044236</td>
+      <td>0.056510</td>
+      <td>1.000000</td>
+      <td>0.644035</td>
+      <td>0.042030</td>
+      <td>0.682920</td>
+      <td>-0.533675</td>
+      <td>0.189046</td>
+      <td>0.344731</td>
+      <td>0.035791</td>
+    </tr>
+    <tr>
+      <th>Price</th>
+      <td>-0.076589</td>
+      <td>0.004403</td>
+      <td>0.644035</td>
+      <td>1.000000</td>
+      <td>-0.001914</td>
+      <td>0.621674</td>
+      <td>-0.803786</td>
+      <td>-0.011104</td>
+      <td>0.449951</td>
+      <td>-0.158609</td>
+    </tr>
+    <tr>
+      <th>Rating_binary</th>
+      <td>0.041443</td>
+      <td>0.852661</td>
+      <td>0.042030</td>
+      <td>-0.001914</td>
+      <td>1.000000</td>
+      <td>0.026500</td>
+      <td>0.013552</td>
+      <td>0.033417</td>
+      <td>0.026194</td>
+      <td>0.072936</td>
+    </tr>
+    <tr>
+      <th>Spec_score_binary</th>
+      <td>-0.086762</td>
+      <td>0.035216</td>
+      <td>0.682920</td>
+      <td>0.621674</td>
+      <td>0.026500</td>
+      <td>1.000000</td>
+      <td>-0.593485</td>
+      <td>0.056186</td>
+      <td>0.260442</td>
+      <td>-0.097654</td>
+    </tr>
+    <tr>
+      <th>Price_binary</th>
+      <td>0.050750</td>
+      <td>0.004276</td>
+      <td>-0.533675</td>
+      <td>-0.803786</td>
+      <td>0.013552</td>
+      <td>-0.593485</td>
+      <td>1.000000</td>
+      <td>0.053860</td>
+      <td>-0.298294</td>
+      <td>0.136713</td>
+    </tr>
+    <tr>
+      <th>Android_version_numeric</th>
+      <td>-0.049842</td>
+      <td>0.043829</td>
+      <td>0.189046</td>
+      <td>-0.011104</td>
+      <td>0.033417</td>
+      <td>0.056186</td>
+      <td>0.053860</td>
+      <td>1.000000</td>
+      <td>0.197192</td>
+      <td>0.227011</td>
+    </tr>
+    <tr>
+      <th>Display_size_inches</th>
+      <td>-0.001671</td>
+      <td>0.046106</td>
+      <td>0.344731</td>
+      <td>0.449951</td>
+      <td>0.026194</td>
+      <td>0.260442</td>
+      <td>-0.298294</td>
+      <td>0.197192</td>
+      <td>1.000000</td>
+      <td>0.070953</td>
+    </tr>
+    <tr>
+      <th>Battery_numeric</th>
+      <td>0.018930</td>
+      <td>0.087285</td>
+      <td>0.035791</td>
+      <td>-0.158609</td>
+      <td>0.072936</td>
+      <td>-0.097654</td>
+      <td>0.136713</td>
+      <td>0.227011</td>
+      <td>0.070953</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+eda.plot_correlation_heatmap(new_data, column_of_interest='Spec_score_binary')
+```
+
+    The following columns were dropped due to being object types:
+    ['Name', 'Battery', 'Display', 'Camera', 'External_Memory', 'Android_version', 'company', 'fast_charging', 'Screen_resolution', 'Processor_name', 'rating_category', 'Spec_score_category', 'Price_category', 'Android_version_cleaned', 'Version_category', 'filtered_ram']
     Correlation to Spec_score_binary
     
 
 
     
-![png](dos_files/dos_27_1.png)
+![png](student_files/student_29_1.png)
     
 
 
 
 ```python
-column_of_interest = 'Price'
-price_corr = eda.correlation(new_data, column=column_of_interest, rank=False)
-
-# Plotting the heatmap
-if price_corr is not None:
-    fig, ax = plt.subplots(figsize=(8, 15))
-    sns.heatmap(price_corr.to_frame().sort_values(by=column_of_interest, ascending=False), annot=False, ax=ax)
-    ax.set_title(f'Variables Correlating with {column_of_interest}')
-    plt.show()
-else:
-    print(f'Correlation calculation failed for column: {column_of_interest}')
+eda.plot_correlation_heatmap(new_data, column_of_interest='Price')
 ```
 
     The following columns were dropped due to being object types:
-    ['Name', 'Display', 'Camera', 'External_Memory', 'Android_version', 'fast_charging', 'Screen_resolution', 'Processor_name', 'Android_version_cleaned', 'Version_category', 'rating_category', 'Spec_score_category', 'Price_category']
+    ['Name', 'Battery', 'Display', 'Camera', 'External_Memory', 'Android_version', 'company', 'fast_charging', 'Screen_resolution', 'Processor_name', 'rating_category', 'Spec_score_category', 'Price_category', 'Android_version_cleaned', 'Version_category', 'filtered_ram']
     Correlation to Price
     
 
 
     
-![png](dos_files/dos_28_1.png)
+![png](student_files/student_30_1.png)
     
 
 
 
 ```python
-column_of_interest = 'Price_binary'
-price_corr = eda.correlation(new_data, column=column_of_interest, rank=False)
-
-# Plotting the heatmap
-if price_corr is not None:
-    fig, ax = plt.subplots(figsize=(8, 15))
-    sns.heatmap(price_corr.to_frame().sort_values(by=column_of_interest, ascending=False), annot=False, ax=ax)
-    ax.set_title(f'Variables Correlating with {column_of_interest}')
-    plt.show()
-else:
-    print(f'Correlation calculation failed for column: {column_of_interest}')
+eda.plot_correlation_heatmap(new_data, column_of_interest='Price_binary')
 ```
 
     The following columns were dropped due to being object types:
-    ['Name', 'Display', 'Camera', 'External_Memory', 'Android_version', 'fast_charging', 'Screen_resolution', 'Processor_name', 'Android_version_cleaned', 'Version_category', 'rating_category', 'Spec_score_category', 'Price_category']
+    ['Name', 'Battery', 'Display', 'Camera', 'External_Memory', 'Android_version', 'company', 'fast_charging', 'Screen_resolution', 'Processor_name', 'rating_category', 'Spec_score_category', 'Price_category', 'Android_version_cleaned', 'Version_category', 'filtered_ram']
     Correlation to Price_binary
     
 
 
     
-![png](dos_files/dos_29_1.png)
+![png](student_files/student_31_1.png)
     
 
 
 # **Data Modelling**
+---
 
 
 *Drop columns for modelling purposes*
@@ -580,10 +977,13 @@ object_columns = new_data.select_dtypes(include=['object'])
 obj_col_list = object_columns.columns.tolist()
 
 eda.drop_columns(new_data, obj_col_list)
+# Drop columns with high correlation with target variables
+high_cor_list = ['Price', 'Spec_score']
+mod_data = eda.drop_columns(new_data, high_cor_list)
 ```
 
 *Model the data*
-### **Base Model - Phone Specification Categorizer (High-Spec or Low-Spec)**
+### **Base Model - Phone Specification Classifier (High-Spec or Low-Spec)**
 ---
 
 *Initialize the Data Modeling class*
@@ -610,7 +1010,7 @@ X_train.shape
 
 
 
-    (959, 173)
+    (959, 58)
 
 
 
@@ -635,104 +1035,104 @@ mod.modelplotting_evaluation(X_train, X_test, y_train, y_test)
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 27   7]
-     [  7 370]]
+     [[273  10]
+     [ 48  80]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       0.79      0.79      0.79        34
-               1       0.98      0.98      0.98       377
+               0       0.85      0.96      0.90       283
+               1       0.89      0.62      0.73       128
     
-        accuracy                           0.97       411
-       macro avg       0.89      0.89      0.89       411
-    weighted avg       0.97      0.97      0.97       411
+        accuracy                           0.86       411
+       macro avg       0.87      0.79      0.82       411
+    weighted avg       0.86      0.86      0.85       411
     
-    Accuracy: 0.9659367396593674
-    Precision: 0.9814323607427056
-    Recall: 0.9814323607427056
-    F1 score: 0.9814323607427056
+    Accuracy: 0.8588807785888077
+    Precision: 0.8888888888888888
+    Recall: 0.625
+    F1 score: 0.7339449541284404
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.95833333 0.92708333 0.94791667 0.953125   0.96335079]
-    Mean CV Accuracy: 0.9499618237347296
+    Cross-Validation Scores: [0.86979167 0.90625    0.84895833 0.86979167 0.90575916]
+    Mean CV Accuracy: 0.8801101657940663
     
     --------------------------------------------------------------------------------
     Model: DecisionTreeClassifier(random_state=42)
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 34   0]
-     [  0 377]]
+     [[253  30]
+     [ 34  94]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       1.00      1.00      1.00        34
-               1       1.00      1.00      1.00       377
+               0       0.88      0.89      0.89       283
+               1       0.76      0.73      0.75       128
     
-        accuracy                           1.00       411
-       macro avg       1.00      1.00      1.00       411
-    weighted avg       1.00      1.00      1.00       411
+        accuracy                           0.84       411
+       macro avg       0.82      0.81      0.82       411
+    weighted avg       0.84      0.84      0.84       411
     
-    Accuracy: 1.0
-    Precision: 1.0
-    Recall: 1.0
-    F1 score: 1.0
+    Accuracy: 0.8442822384428224
+    Precision: 0.7580645161290323
+    Recall: 0.734375
+    F1 score: 0.7460317460317459
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [1. 1. 1. 1. 1.]
-    Mean CV Accuracy: 1.0
+    Cross-Validation Scores: [0.88541667 0.88020833 0.82291667 0.828125   0.86910995]
+    Mean CV Accuracy: 0.857155322862129
     
     --------------------------------------------------------------------------------
     Model: RandomForestClassifier(random_state=42)
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 34   0]
-     [  0 377]]
+     [[265  18]
+     [ 33  95]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       1.00      1.00      1.00        34
-               1       1.00      1.00      1.00       377
+               0       0.89      0.94      0.91       283
+               1       0.84      0.74      0.79       128
     
-        accuracy                           1.00       411
-       macro avg       1.00      1.00      1.00       411
-    weighted avg       1.00      1.00      1.00       411
+        accuracy                           0.88       411
+       macro avg       0.86      0.84      0.85       411
+    weighted avg       0.87      0.88      0.87       411
     
-    Accuracy: 1.0
-    Precision: 1.0
-    Recall: 1.0
-    F1 score: 1.0
+    Accuracy: 0.8759124087591241
+    Precision: 0.8407079646017699
+    Recall: 0.7421875
+    F1 score: 0.7883817427385892
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [1. 1. 1. 1. 1.]
-    Mean CV Accuracy: 1.0
+    Cross-Validation Scores: [0.85416667 0.90625    0.84895833 0.859375   0.89528796]
+    Mean CV Accuracy: 0.8728075916230367
     
     --------------------------------------------------------------------------------
     Model: KNeighborsClassifier()
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 16  18]
-     [ 14 363]]
+     [[252  31]
+     [ 59  69]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       0.53      0.47      0.50        34
-               1       0.95      0.96      0.96       377
+               0       0.81      0.89      0.85       283
+               1       0.69      0.54      0.61       128
     
-        accuracy                           0.92       411
-       macro avg       0.74      0.72      0.73       411
-    weighted avg       0.92      0.92      0.92       411
+        accuracy                           0.78       411
+       macro avg       0.75      0.71      0.73       411
+    weighted avg       0.77      0.78      0.77       411
     
-    Accuracy: 0.9221411192214112
-    Precision: 0.952755905511811
-    Recall: 0.9628647214854111
-    F1 score: 0.9577836411609498
+    Accuracy: 0.781021897810219
+    Precision: 0.69
+    Recall: 0.5390625
+    F1 score: 0.6052631578947368
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.91145833 0.890625   0.953125   0.89583333 0.92146597]
-    Mean CV Accuracy: 0.9145015270506109
+    Cross-Validation Scores: [0.77604167 0.80208333 0.73958333 0.70833333 0.7486911 ]
+    Mean CV Accuracy: 0.7549465532286213
     
     --------------------------------------------------------------------------------
     
@@ -769,34 +1169,34 @@ mod.modelplotting_evaluation(X_train, X_test, y_train, y_test)
     <tr>
       <th>0</th>
       <td>LogisticRegression(random_state=42)</td>
-      <td>0.965937</td>
-      <td>0.981432</td>
-      <td>0.981432</td>
-      <td>0.981432</td>
+      <td>0.858881</td>
+      <td>0.625000</td>
+      <td>0.888889</td>
+      <td>0.733945</td>
     </tr>
     <tr>
       <th>1</th>
       <td>DecisionTreeClassifier(random_state=42)</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
+      <td>0.844282</td>
+      <td>0.734375</td>
+      <td>0.758065</td>
+      <td>0.746032</td>
     </tr>
     <tr>
       <th>2</th>
       <td>RandomForestClassifier(random_state=42)</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
+      <td>0.875912</td>
+      <td>0.742188</td>
+      <td>0.840708</td>
+      <td>0.788382</td>
     </tr>
     <tr>
       <th>3</th>
       <td>KNeighborsClassifier()</td>
-      <td>0.922141</td>
-      <td>0.962865</td>
-      <td>0.952756</td>
-      <td>0.957784</td>
+      <td>0.781022</td>
+      <td>0.539062</td>
+      <td>0.690000</td>
+      <td>0.605263</td>
     </tr>
   </tbody>
 </table>
@@ -820,104 +1220,104 @@ mod.modelplotting_evaluation(X_train_resampled, X_test, y_train_resampled, y_tes
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 30   4]
-     [ 13 364]]
+     [[244  39]
+     [ 19 109]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       0.70      0.88      0.78        34
-               1       0.99      0.97      0.98       377
+               0       0.93      0.86      0.89       283
+               1       0.74      0.85      0.79       128
     
-        accuracy                           0.96       411
-       macro avg       0.84      0.92      0.88       411
-    weighted avg       0.97      0.96      0.96       411
+        accuracy                           0.86       411
+       macro avg       0.83      0.86      0.84       411
+    weighted avg       0.87      0.86      0.86       411
     
-    Accuracy: 0.9586374695863747
-    Precision: 0.9891304347826086
-    Recall: 0.9655172413793104
-    F1 score: 0.9771812080536914
+    Accuracy: 0.8588807785888077
+    Precision: 0.7364864864864865
+    Recall: 0.8515625
+    F1 score: 0.7898550724637682
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.91156463 0.94897959 0.95238095 0.94197952 0.97952218]
-    Mean CV Accuracy: 0.9468853753105337
+    Cross-Validation Scores: [0.84810127 0.80508475 0.86864407 0.91949153 0.86016949]
+    Mean CV Accuracy: 0.8602982192662518
     
     --------------------------------------------------------------------------------
     Model: DecisionTreeClassifier(random_state=42)
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 34   0]
-     [  0 377]]
+     [[258  25]
+     [ 40  88]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       1.00      1.00      1.00        34
-               1       1.00      1.00      1.00       377
+               0       0.87      0.91      0.89       283
+               1       0.78      0.69      0.73       128
     
-        accuracy                           1.00       411
-       macro avg       1.00      1.00      1.00       411
-    weighted avg       1.00      1.00      1.00       411
+        accuracy                           0.84       411
+       macro avg       0.82      0.80      0.81       411
+    weighted avg       0.84      0.84      0.84       411
     
-    Accuracy: 1.0
-    Precision: 1.0
-    Recall: 1.0
-    F1 score: 1.0
+    Accuracy: 0.8418491484184915
+    Precision: 0.7787610619469026
+    Recall: 0.6875
+    F1 score: 0.7302904564315352
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [1. 1. 1. 1. 1.]
-    Mean CV Accuracy: 1.0
+    Cross-Validation Scores: [0.81012658 0.81779661 0.82627119 0.92372881 0.91949153]
+    Mean CV Accuracy: 0.8594829435743403
     
     --------------------------------------------------------------------------------
     Model: RandomForestClassifier(random_state=42)
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 34   0]
-     [  0 377]]
+     [[260  23]
+     [ 29  99]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       1.00      1.00      1.00        34
-               1       1.00      1.00      1.00       377
+               0       0.90      0.92      0.91       283
+               1       0.81      0.77      0.79       128
     
-        accuracy                           1.00       411
-       macro avg       1.00      1.00      1.00       411
-    weighted avg       1.00      1.00      1.00       411
+        accuracy                           0.87       411
+       macro avg       0.86      0.85      0.85       411
+    weighted avg       0.87      0.87      0.87       411
     
-    Accuracy: 1.0
-    Precision: 1.0
-    Recall: 1.0
-    F1 score: 1.0
+    Accuracy: 0.8734793187347932
+    Precision: 0.8114754098360656
+    Recall: 0.7734375
+    F1 score: 0.792
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.99659864 1.         1.         1.         1.        ]
-    Mean CV Accuracy: 0.9993197278911564
+    Cross-Validation Scores: [0.86919831 0.84322034 0.88135593 0.95762712 0.93220339]
+    Mean CV Accuracy: 0.8967210183794607
     
     --------------------------------------------------------------------------------
     Model: KNeighborsClassifier()
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 25   9]
-     [ 48 329]]
+     [[235  48]
+     [ 39  89]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       0.34      0.74      0.47        34
-               1       0.97      0.87      0.92       377
+               0       0.86      0.83      0.84       283
+               1       0.65      0.70      0.67       128
     
-        accuracy                           0.86       411
-       macro avg       0.66      0.80      0.69       411
-    weighted avg       0.92      0.86      0.88       411
+        accuracy                           0.79       411
+       macro avg       0.75      0.76      0.76       411
+    weighted avg       0.79      0.79      0.79       411
     
-    Accuracy: 0.8613138686131386
-    Precision: 0.9733727810650887
-    Recall: 0.8726790450928382
-    F1 score: 0.9202797202797203
+    Accuracy: 0.7883211678832117
+    Precision: 0.6496350364963503
+    Recall: 0.6953125
+    F1 score: 0.6716981132075471
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.8537415  0.82653061 0.89795918 0.82935154 0.87372014]
-    Mean CV Accuracy: 0.8562605929743912
+    Cross-Validation Scores: [0.8185654  0.76694915 0.75847458 0.77118644 0.77118644]
+    Mean CV Accuracy: 0.7772724022026747
     
     --------------------------------------------------------------------------------
     
@@ -954,34 +1354,34 @@ mod.modelplotting_evaluation(X_train_resampled, X_test, y_train_resampled, y_tes
     <tr>
       <th>0</th>
       <td>LogisticRegression(random_state=42)</td>
-      <td>0.958637</td>
-      <td>0.965517</td>
-      <td>0.989130</td>
-      <td>0.977181</td>
+      <td>0.858881</td>
+      <td>0.851562</td>
+      <td>0.736486</td>
+      <td>0.789855</td>
     </tr>
     <tr>
       <th>1</th>
       <td>DecisionTreeClassifier(random_state=42)</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
+      <td>0.841849</td>
+      <td>0.687500</td>
+      <td>0.778761</td>
+      <td>0.730290</td>
     </tr>
     <tr>
       <th>2</th>
       <td>RandomForestClassifier(random_state=42)</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
+      <td>0.873479</td>
+      <td>0.773438</td>
+      <td>0.811475</td>
+      <td>0.792000</td>
     </tr>
     <tr>
       <th>3</th>
       <td>KNeighborsClassifier()</td>
-      <td>0.861314</td>
-      <td>0.872679</td>
-      <td>0.973373</td>
-      <td>0.920280</td>
+      <td>0.788321</td>
+      <td>0.695312</td>
+      <td>0.649635</td>
+      <td>0.671698</td>
     </tr>
   </tbody>
 </table>
@@ -998,11 +1398,11 @@ mod.plot_roc_curves(models,X_train_resampled, y_train_resampled, X_test, y_test)
 
 
     
-![png](dos_files/dos_44_0.png)
+![png](student_files/student_46_0.png)
     
 
 
-### **Model 2 - Price Categorizer (Expensive or Affordable)**
+### **Model 2 - Phone Price Classifier (Expensive or Affordable)**
 ---
 
 
@@ -1015,104 +1415,104 @@ mod.modelplotting_evaluation(X_train, X_test, y_train, y_test)
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 92   2]
-     [  5 312]]
+     [[ 67  27]
+     [ 34 283]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       0.95      0.98      0.96        94
-               1       0.99      0.98      0.99       317
+               0       0.66      0.71      0.69        94
+               1       0.91      0.89      0.90       317
     
-        accuracy                           0.98       411
-       macro avg       0.97      0.98      0.98       411
-    weighted avg       0.98      0.98      0.98       411
+        accuracy                           0.85       411
+       macro avg       0.79      0.80      0.79       411
+    weighted avg       0.86      0.85      0.85       411
     
-    Accuracy: 0.9829683698296837
-    Precision: 0.9936305732484076
-    Recall: 0.9842271293375394
-    F1 score: 0.9889064976228209
+    Accuracy: 0.851581508515815
+    Precision: 0.9129032258064517
+    Recall: 0.8927444794952681
+    F1 score: 0.9027113237639554
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.99479167 0.99479167 0.99479167 0.98958333 0.9947644 ]
-    Mean CV Accuracy: 0.9937445462478186
+    Cross-Validation Scores: [0.88541667 0.875      0.86458333 0.84895833 0.89005236]
+    Mean CV Accuracy: 0.8728021378708553
     
     --------------------------------------------------------------------------------
     Model: DecisionTreeClassifier(random_state=42)
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 94   0]
-     [  0 317]]
+     [[ 72  22]
+     [ 23 294]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       1.00      1.00      1.00        94
-               1       1.00      1.00      1.00       317
+               0       0.76      0.77      0.76        94
+               1       0.93      0.93      0.93       317
     
-        accuracy                           1.00       411
-       macro avg       1.00      1.00      1.00       411
-    weighted avg       1.00      1.00      1.00       411
+        accuracy                           0.89       411
+       macro avg       0.84      0.85      0.85       411
+    weighted avg       0.89      0.89      0.89       411
     
-    Accuracy: 1.0
-    Precision: 1.0
-    Recall: 1.0
-    F1 score: 1.0
+    Accuracy: 0.8905109489051095
+    Precision: 0.930379746835443
+    Recall: 0.9274447949526814
+    F1 score: 0.928909952606635
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [1. 1. 1. 1. 1.]
-    Mean CV Accuracy: 1.0
+    Cross-Validation Scores: [0.84375    0.890625   0.859375   0.86979167 0.87958115]
+    Mean CV Accuracy: 0.8686245636998254
     
     --------------------------------------------------------------------------------
     Model: RandomForestClassifier(random_state=42)
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 94   0]
-     [  0 317]]
+     [[ 73  21]
+     [ 27 290]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       1.00      1.00      1.00        94
-               1       1.00      1.00      1.00       317
+               0       0.73      0.78      0.75        94
+               1       0.93      0.91      0.92       317
     
-        accuracy                           1.00       411
-       macro avg       1.00      1.00      1.00       411
-    weighted avg       1.00      1.00      1.00       411
+        accuracy                           0.88       411
+       macro avg       0.83      0.85      0.84       411
+    weighted avg       0.89      0.88      0.88       411
     
-    Accuracy: 1.0
-    Precision: 1.0
-    Recall: 1.0
-    F1 score: 1.0
+    Accuracy: 0.8832116788321168
+    Precision: 0.932475884244373
+    Recall: 0.9148264984227129
+    F1 score: 0.9235668789808917
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [1. 1. 1. 1. 1.]
-    Mean CV Accuracy: 1.0
+    Cross-Validation Scores: [0.89583333 0.89583333 0.890625   0.86458333 0.89528796]
+    Mean CV Accuracy: 0.8884325916230367
     
     --------------------------------------------------------------------------------
     Model: KNeighborsClassifier()
     --------------------------------------------------------------------------------
     Confusion matrix:
     
-     [[ 93   1]
-     [  1 316]]
+     [[ 58  36]
+     [ 23 294]]
     
     Classification report:               precision    recall  f1-score   support
     
-               0       0.99      0.99      0.99        94
-               1       1.00      1.00      1.00       317
+               0       0.72      0.62      0.66        94
+               1       0.89      0.93      0.91       317
     
-        accuracy                           1.00       411
-       macro avg       0.99      0.99      0.99       411
-    weighted avg       1.00      1.00      1.00       411
+        accuracy                           0.86       411
+       macro avg       0.80      0.77      0.79       411
+    weighted avg       0.85      0.86      0.85       411
     
-    Accuracy: 0.9951338199513382
-    Precision: 0.9968454258675079
-    Recall: 0.9968454258675079
-    F1 score: 0.9968454258675079
+    Accuracy: 0.8564476885644768
+    Precision: 0.8909090909090909
+    Recall: 0.9274447949526814
+    F1 score: 0.9088098918083461
     --------------------------------------------------------------------------------
     
-    Cross-Validation Scores: [0.99479167 0.99479167 0.98958333 1.         0.9947644 ]
-    Mean CV Accuracy: 0.9947862129144852
+    Cross-Validation Scores: [0.83333333 0.83333333 0.82291667 0.80729167 0.81675393]
+    Mean CV Accuracy: 0.8227257853403142
     
     --------------------------------------------------------------------------------
     
@@ -1149,34 +1549,219 @@ mod.modelplotting_evaluation(X_train, X_test, y_train, y_test)
     <tr>
       <th>0</th>
       <td>LogisticRegression(random_state=42)</td>
-      <td>0.982968</td>
-      <td>0.984227</td>
-      <td>0.993631</td>
-      <td>0.988906</td>
+      <td>0.851582</td>
+      <td>0.892744</td>
+      <td>0.912903</td>
+      <td>0.902711</td>
     </tr>
     <tr>
       <th>1</th>
       <td>DecisionTreeClassifier(random_state=42)</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
+      <td>0.890511</td>
+      <td>0.927445</td>
+      <td>0.930380</td>
+      <td>0.928910</td>
     </tr>
     <tr>
       <th>2</th>
       <td>RandomForestClassifier(random_state=42)</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
+      <td>0.883212</td>
+      <td>0.914826</td>
+      <td>0.932476</td>
+      <td>0.923567</td>
     </tr>
     <tr>
       <th>3</th>
       <td>KNeighborsClassifier()</td>
-      <td>0.995134</td>
-      <td>0.996845</td>
-      <td>0.996845</td>
-      <td>0.996845</td>
+      <td>0.856448</td>
+      <td>0.927445</td>
+      <td>0.890909</td>
+      <td>0.908810</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+X_train_resampled, y_train_resampled = mod.apply_smote(X_train, y_train)
+```
+
+*Apply SMOTE to deal with class imbalance*
+
+
+```python
+mod.modelplotting_evaluation(X_train_resampled, X_test, y_train_resampled, y_test)
+```
+
+    Model: LogisticRegression(random_state=42)
+    --------------------------------------------------------------------------------
+    Confusion matrix:
+    
+     [[ 79  15]
+     [ 45 272]]
+    
+    Classification report:               precision    recall  f1-score   support
+    
+               0       0.64      0.84      0.72        94
+               1       0.95      0.86      0.90       317
+    
+        accuracy                           0.85       411
+       macro avg       0.79      0.85      0.81       411
+    weighted avg       0.88      0.85      0.86       411
+    
+    Accuracy: 0.8540145985401459
+    Precision: 0.9477351916376306
+    Recall: 0.8580441640378549
+    F1 score: 0.9006622516556292
+    --------------------------------------------------------------------------------
+    
+    Cross-Validation Scores: [0.82539683 0.85657371 0.88446215 0.92031873 0.88047809]
+    Mean CV Accuracy: 0.8734458989439069
+    
+    --------------------------------------------------------------------------------
+    Model: DecisionTreeClassifier(random_state=42)
+    --------------------------------------------------------------------------------
+    Confusion matrix:
+    
+     [[ 69  25]
+     [ 39 278]]
+    
+    Classification report:               precision    recall  f1-score   support
+    
+               0       0.64      0.73      0.68        94
+               1       0.92      0.88      0.90       317
+    
+        accuracy                           0.84       411
+       macro avg       0.78      0.81      0.79       411
+    weighted avg       0.85      0.84      0.85       411
+    
+    Accuracy: 0.8442822384428224
+    Precision: 0.9174917491749175
+    Recall: 0.8769716088328076
+    F1 score: 0.8967741935483869
+    --------------------------------------------------------------------------------
+    
+    Cross-Validation Scores: [0.82142857 0.87250996 0.87250996 0.9123506  0.92430279]
+    Mean CV Accuracy: 0.8806203756402959
+    
+    --------------------------------------------------------------------------------
+    Model: RandomForestClassifier(random_state=42)
+    --------------------------------------------------------------------------------
+    Confusion matrix:
+    
+     [[ 77  17]
+     [ 31 286]]
+    
+    Classification report:               precision    recall  f1-score   support
+    
+               0       0.71      0.82      0.76        94
+               1       0.94      0.90      0.92       317
+    
+        accuracy                           0.88       411
+       macro avg       0.83      0.86      0.84       411
+    weighted avg       0.89      0.88      0.89       411
+    
+    Accuracy: 0.8832116788321168
+    Precision: 0.9438943894389439
+    Recall: 0.9022082018927445
+    F1 score: 0.9225806451612903
+    --------------------------------------------------------------------------------
+    
+    Cross-Validation Scores: [0.88492063 0.87250996 0.94820717 0.96015936 0.96812749]
+    Mean CV Accuracy: 0.9267849237968762
+    
+    --------------------------------------------------------------------------------
+    Model: KNeighborsClassifier()
+    --------------------------------------------------------------------------------
+    Confusion matrix:
+    
+     [[ 70  24]
+     [ 42 275]]
+    
+    Classification report:               precision    recall  f1-score   support
+    
+               0       0.62      0.74      0.68        94
+               1       0.92      0.87      0.89       317
+    
+        accuracy                           0.84       411
+       macro avg       0.77      0.81      0.79       411
+    weighted avg       0.85      0.84      0.84       411
+    
+    Accuracy: 0.8394160583941606
+    Precision: 0.919732441471572
+    Recall: 0.8675078864353313
+    F1 score: 0.8928571428571429
+    --------------------------------------------------------------------------------
+    
+    Cross-Validation Scores: [0.83730159 0.86454183 0.83665339 0.87649402 0.9123506 ]
+    Mean CV Accuracy: 0.8654682855878075
+    
+    --------------------------------------------------------------------------------
+    
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Model</th>
+      <th>Accuracy</th>
+      <th>Recall</th>
+      <th>Precision</th>
+      <th>F1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>LogisticRegression(random_state=42)</td>
+      <td>0.854015</td>
+      <td>0.858044</td>
+      <td>0.947735</td>
+      <td>0.900662</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>DecisionTreeClassifier(random_state=42)</td>
+      <td>0.844282</td>
+      <td>0.876972</td>
+      <td>0.917492</td>
+      <td>0.896774</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>RandomForestClassifier(random_state=42)</td>
+      <td>0.883212</td>
+      <td>0.902208</td>
+      <td>0.943894</td>
+      <td>0.922581</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>KNeighborsClassifier()</td>
+      <td>0.839416</td>
+      <td>0.867508</td>
+      <td>0.919732</td>
+      <td>0.892857</td>
     </tr>
   </tbody>
 </table>
@@ -1188,29 +1773,56 @@ mod.modelplotting_evaluation(X_train, X_test, y_train, y_test)
 ```python
 models= [mod.lr, mod.dc, mod.rf, mod.knn]
 
-mod.plot_roc_curves(models, X_train, y_train, X_test, y_test)
+mod.plot_roc_curves(models, X_train_resampled, y_train_resampled, X_test, y_test)
 ```
 
 
     
-![png](dos_files/dos_47_0.png)
+![png](student_files/student_52_0.png)
     
 
 
 # **Evaluation**
-
-### **Base Model - Phone Specification Categorizer (High-Spec or Low-Spec)**
 ---
-* The base model includes `logistic regression`, `decision tree`, `random forest`, and `k-neighbors classifiers`.
-
-* `All models` perform well, with high accuracy and recall.
-
-* The `decision tree` and `random forest` achieve perfect accuracy (1.0).
-### **Model 2 - Price Categorizer (Expensive or Affordable)**
+### **Base Model - Phone Specification Classifier (High-Spec or Low-Spec)**
 ---
-- Similar to the base model, `all classifiers` perform exceptionally well.
+1. **Logistic Regression (LR)**:
+ 
+   - **Interpretation**: LR correctly predicts 82.48% of the phone specifications overall. It has a good balance between precision and recall.
 
-- `Decision tree` and `random forest` achieve perfect accuracy (1.0).
+2. **Decision Tree Classifier (DTC)**:
+
+   - **Interpretation**: DTC performs well with high accuracy and balanced precision and recall. It may be overfitting the data.
+
+3. **Random Forest Classifier (RFC)**:
+
+   - **Interpretation**: RFC achieves high accuracy and maintains good precision and recall. It's a strong performer.
+
+4. **K-Nearest Neighbors (KNN)**:
+
+   - **Interpretation**: KNN performs adequately but has lower accuracy compared to other models.
+
+Overall, the Random Forest Classifier seems to be the best-performing model for the phone specification classification task.
+
+### **Model 2 - Phone Price Classifier (Expensive or Affordable)**
+---
+1. **Logistic Regression (LR)**:
+
+   - **Interpretation**: LR correctly predicts 85.16% of phone prices overall. It has high precision, meaning it accurately identifies expensive phones.
+
+2. **Decision Tree Classifier (DTC)**:
+
+   - **Interpretation**: DTC performs well with high accuracy and balanced precision and recall. It may be overfitting the data.
+
+3. **Random Forest Classifier (RFC)**:
+
+   - **Interpretation**: RFC achieves high accuracy and maintains good precision and recall. It's a strong performer.
+
+4. **K-Nearest Neighbors (KNN)**:
+
+   - **Interpretation**: KNN performs adequately but has lower accuracy compared to other models.
+
+Overall, both Decision Tree Classifier and Random Forest Classifier seem to be good choices for the phone price classification task.
 
 ### **Metrics Justification:**
 - **Accuracy**: Measures overall correctness but may not be sensitive to class imbalances.
@@ -1222,9 +1834,9 @@ mod.plot_roc_curves(models, X_train, y_train, X_test, y_test)
 - **F1 Score**: Balances precision and recall.
 
 ### **Final Model Recommendation:**
-- Considering the business context, I recommend using the **Decision Tree Classifier** for both the **Phone Specification Categorizer** and **Price Categorizer**.
+- Considering the business context, I recommend using the **Random Forest Classifier** for both the **Phone Specification Classifier** and **Phone Price Classifier**.
 
-- It achieves perfect accuracy and is interpretable.
+- It has the highest accuracy and is interpretable.
 
 ### **Implications:**
 ---
@@ -1235,5 +1847,119 @@ mod.plot_roc_curves(models, X_train, y_train, X_test, y_test)
     - Allocate resources effectively for the upcoming new product.📱
 
     - Enhance customer satisfaction by focusing on key features.
+
+# Conclusions
+## Feature Recommendations
+
+
+```python
+# Create a new column 'phone_category' based on 'Spec_score_category' and 'Price_category'
+data['phone_category'] = data['Spec_score_category'] + ', ' + data['Price_category']
+
+# Plots
+eda.plot_features_against_price(data, feature_y = 'filtered_ram', color_feature = 'phone_category',
+                                symbol_feature = 'phone_category',
+                                plot_title = "Phone Price and RAM Recommendation")
+eda.plot_features_against_price(data, feature_y = 'Processor', color_feature = 'phone_category',
+                                 symbol_feature = 'phone_category',
+                                 plot_title = "Phone Price and Processor Recommendation")
+eda.plot_features_against_price(data, feature_y = 'Inbuilt_memory', color_feature = 'phone_category',
+                                 symbol_feature = 'phone_category',
+                                 plot_title = "Phone Price and Inbuilt Memory Recommendation")
+eda.plot_features_against_price(data, feature_y = 'Display_size_inches', color_feature = 'phone_category',
+                                 symbol_feature = 'phone_category',
+                                 plot_title = "Phone Price and Display Size Recommendation")
+eda.plot_features_against_price(data, feature_y = 'Battery_numeric', color_feature = 'phone_category',
+                                 symbol_feature = 'phone_category',
+                                 plot_title = "Phone Price and Battery Capacity Recommendation")
+```
+
+
+
+
+
+
+
+
+
+
+
+*Recommendations*
+
+
+```python
+# Create a DataFrame with Feature and Recommendation columns
+
+# Define the recommendations dictionary
+recommendations = {'Price': '42K', 'RAM': '8 GB & 12 GB', 'Processor': 'Octa Core', 
+                    'Inbuilt Memory': '128 GB or 256 GB', 'Display Size': '6.1 - 6.5 inches', 
+                    'Battery Capacity': '5000 mAh'}
+
+# Create the DataFrame
+df = pd.DataFrame(list(recommendations.items()), columns=['Feature', 'Recommendation'])
+df
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Feature</th>
+      <th>Recommendation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Price</td>
+      <td>42K</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>RAM</td>
+      <td>8 GB &amp; 12 GB</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Processor</td>
+      <td>Octa Core</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Inbuilt Memory</td>
+      <td>128 GB or 256 GB</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Display Size</td>
+      <td>6.1 - 6.5 inches</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Battery Capacity</td>
+      <td>5000 mAh</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 
 

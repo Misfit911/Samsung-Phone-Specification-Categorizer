@@ -1,10 +1,12 @@
 #import necessary modules
+import re
 import pandas as pd
 import numpy as np
+import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Import necessary modules for df for Modelling
+# Import necessary modules for data for Modelling
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -37,34 +39,34 @@ class DataSourcing:
         pass
     
     def open_file(self, path):
-        df = pd.read_csv(path)
-        df.rename(columns={'Unnamed: 0': 'Index'}, inplace=True)  # Rename the column
-        return df
-    def dataframe_details(self,df):
+        data = pd.read_csv(path)
+        data.rename(columns={'Unnamed: 0': 'Index'}, inplace=True)  # Rename the column
+        return data
+    def dataframe_details(self,data):
         """
         Print details of the dataframe.
         Parameters:
-        df (DataFrame): The dataframe to be analyzed.
+        data (DataFrame): The dataframe to be analyzed.
         Returns:
         None
         """
         print("=" * 30)
-        print(f"DATAFRAME SHAPE: {df.shape}")
+        print(f"DATAFRAME SHAPE: {data.shape}")
         print("=" * 30, "\n\n")
         print("=" * 15)
         print(f"DATAFRAME HEAD:")
         print("=" * 15)
-        print(f"{df.head()}")
+        print(f"{data.head()}")
         print("=" * 70, "\n\n")
         print("=" * 30)
         print(f"DATAFRAME COLUMNS INFO:")
         print("=" * 30)
-        print(f"{df.info()}")
+        print(f"{data.info()}")
         print("=" * 70, "\n\n")
         print("=" * 30)
         print(f"DATAFRAME KEY STATISTICS:")
         print("=" * 30)
-        print(f"{df.describe().transpose()}")
+        print(f"{data.describe().transpose()}")
         print("=" * 70, "\n\n")
 
 # Class that contains functions used for data preparation
@@ -125,26 +127,65 @@ class DataPreprocessing(DataSourcing):
         numeric_imputer = SimpleImputer(strategy='mean')
         object_imputer = SimpleImputer(strategy='most_frequent')
 
-        data[missing_numeric_cols] = numeric_imputer.fit_transform(data[missing_numeric_cols])
-        data[missing_object_cols] = object_imputer.fit_transform(data[missing_object_cols])
+        for col in missing_object_cols:
+            if col == 'filtered_ram':
+                data[col] = data[col].fillna(data[col].value_counts().idxmax())
+            else:
+                data[col] = object_imputer.fit_transform(data[[col]])
+
+        for col in missing_numeric_cols:
+            data[col] = numeric_imputer.fit_transform(data[[col]])
 
 
     def create_rating_category(self, data):
-        data['Rating_binary'] = (data['Rating'] >= 4).astype(int)
+        data['Rating_binary'] = (data['Rating'] >= 4.45).astype(int)
         data['rating_category'] = data['Rating_binary'].map({1: 'Good', 0: 'Not Good'})
 
     def create_spec_score_category(self, data):
-        data['Spec_score_binary'] = (data['Spec_score'] >= 70).astype(int)
+        data['Spec_score_binary'] = (data['Spec_score'] >= 86).astype(int)
         data['Spec_score_category'] = data['Spec_score_binary'].map({1: 'High-Spec', 0: 'Low-Spec'})
 
     def create_price_category(self, data):
         data['Price'] = data['Price'].str.replace(',', '').astype(int)
         upper_quartile_price = data['Price'].quantile(0.75)
         data['Price_binary'] = (data['Price'] <= upper_quartile_price).astype(int)
-        data['Price_category'] = data['Price_binary'].map({1: 'Expensive', 0: 'Affordable'})
+        data['Price_category'] = data['Price_binary'].map({1: 'Affordable', 0: 'Expensive'})
 
     def create_company_category(self, data):
         data['Company_category'] = np.where(data['company'] == 'Samsung', 'Samsung', 'Other Brands')
+
+    def convert_display_to_numeric(self, data, display_column = 'Display'):
+        """
+        Converts the 'Display' column to numeric values and creates a new column 'display_size_inches'.
+        Args:
+            data (pd.DataFrame): The input DataFrame containing the 'Display' column.
+        Returns:
+            pd.DataFrame: The modified DataFrame with the new 'display_size_inches' column.
+        """
+        # Extract numeric values from the 'Display' column
+        try:
+            data['Display_size_inches'] = data['Display'].str.extract(r'(\d+\.\d+)').astype(float)
+        except ValueError:
+            data['Display_size_inches'] = None
+
+    def convert_battery_to_numeric(self, data, battery_column = 'Battery'):
+        try:
+            data['Battery_numeric'] = data['Battery'].str.replace(' mAh Battery', '').str.extract(r'(\d{4})').astype(float)
+        except ValueError:
+            data['Battery_numeric'] = None
+
+    def filter_ram_values(self, data):
+        """
+        Converts the 'Ram' column to numeric values and creates a new column 'filtered_ram'.
+
+        Args:
+            data (pd.DataFrame): The input DataFrame containing the 'Ram' column.
+
+        Returns:
+            pd.DataFrame: The modified DataFrame with the new 'filtered_ram' column.
+        """
+        unwanted_values = ['256 GB inbuilt', '512 GB inbuilt', 'Helio G90T', '128 GB inbuilt', '6000 mAh Battery with 22.5W Fast Charging']
+        data['filtered_ram'] = data['Ram'].apply(lambda x: x if x not in unwanted_values else None)
 
 # Class for Data Visualization and Analysis
 class DataAnalysis(DataPreprocessing,DataSourcing):
@@ -186,7 +227,7 @@ class DataAnalysis(DataPreprocessing,DataSourcing):
         plt.show()
 
     # Check the distribution of the column variables
-    def check_normal_distribution(self, data, exclude_columns=[]):
+    def check_distribution(self, data, exclude_columns=[]):
         for col in data.columns:
             if col in exclude_columns:
                 continue  # Skip the column if it is in the exclude_columns list
@@ -208,7 +249,7 @@ class DataAnalysis(DataPreprocessing,DataSourcing):
                 plt.show()
 
     def encode_categorical_features(self, data):
-        categorical_features = ['Battery', 'No_of_sim', 'Ram', 'company', 'Company_category', 'Inbuilt_memory', 'Processor']
+        categorical_features = ['No_of_sim', 'Ram', 'Company_category', 'Inbuilt_memory', 'Processor']
         data = pd.get_dummies(data, columns=categorical_features)
         return data
 
@@ -255,6 +296,30 @@ class DataAnalysis(DataPreprocessing,DataSourcing):
             else:
                 data_corr = data.corr()
                 return data_corr
+            
+    def plot_correlation_heatmap(self, data, column_of_interest):
+        """
+        Generates a heatmap showing the correlation between variables based on the specified column.
+
+        Args:
+            data (pd.DataFrame): The input DataFrame.
+            column_of_interest (str): The column for which correlations are calculated.
+
+        Returns:
+            None
+        """
+        spec_score_binary_corr = self.correlation(data, column=column_of_interest, rank=False)
+        if spec_score_binary_corr is not None:
+            fig, ax = plt.subplots(figsize=(8, 15))
+            sns.heatmap(spec_score_binary_corr.to_frame().sort_values(by=column_of_interest, ascending=False), annot=False, ax=ax)
+            ax.set_title(f'Variables Correlating with {column_of_interest}')
+            plt.show()
+        else:
+            print(f'Correlation calculation failed for column: {column_of_interest}')
+
+    def plot_features_against_price(self, data,feature_y, color_feature, symbol_feature, plot_title, feature_x = 'Price', ):
+        fig = px.scatter(data, x=feature_x, y=feature_y, color=color_feature, symbol=symbol_feature, title=plot_title)
+        fig.show()
 
 # Class that contains functions used for data preparation
 class DataModeling(DataAnalysis,DataPreprocessing,DataSourcing):
@@ -365,3 +430,5 @@ class DataModeling(DataAnalysis,DataPreprocessing,DataSourcing):
         plt.title('Receiver Operating Characteristic (ROC) Curves')
         plt.legend(loc="lower right")
         plt.show()
+
+
