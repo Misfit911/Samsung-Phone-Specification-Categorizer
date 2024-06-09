@@ -12,7 +12,7 @@ By addressing the real-world challenge of understanding mobile phone success fac
 The evaluation results indicate strong model performance, especially with the decision tree and random forest classifiers. The perfect accuracy achieved by these models suggests that they are suitable for predicting whether a phone is high-spec or low-spec. The implications for Samsung include optimizing marketing strategies, resource allocation, and overall customer satisfaction.
 
 # **Business Understanding**
----
+
 # **Business Problem**
 Samsung wants to launch a new product in the market. As a data scientist working for Samsung, I have been tasked to gain valuable insights from the dataset related to mobile phones. That way, it can gain an understanding of the factors that contribute to a phone’s success or failure and hence set an affordable price that will increase sales. The goal is to drive sales up📈 by offering a high spec product at an affordable price. Samsung wants to know which features will cost less to produce and have a high profit margin as well when sold.
 
@@ -36,10 +36,10 @@ Samsung wants to launch a new product in the market. As a data scientist working
 The project’s implications lie in improving Samsung’s competitiveness, understanding customer preferences, and driving innovation. By addressing this problem, Samsung is able to enhance user experiences and hence its success.✅
 
 # **Data Understanding**
----
+
 
 ## **Dataset Suitability**
-The dataset is suitable for the project because it contains relevant information about mobile phones, including specifications, ratings, prices, and features. It covers various aspects that impact a phone’s success in the market.
+The dataset used is from kaggle. It is suitable for the project because it contains relevant information about mobile phones, including specifications, ratings, prices, and features. It covers various aspects that impact a phone’s success in the market. The link to the dataset can be found <a href="https://www.kaggle.com/datasets/dewangmoghe/mobile-phone-price-prediction/data">here</a>.
 
 ## **Feature Justification**
 1. **Rating**: Captures user satisfaction, which directly affects sales and brand reputation.
@@ -259,7 +259,7 @@ load.dataframe_details(data)
     
 
 # **Data Preparation**
----
+
 ## **Data Cleaning**
 
 *Feature Engineering* & *Encoding Columns*
@@ -567,7 +567,7 @@ data.head()
 
 
 # **Data Analysis**
----
+
 
 *Create box plots and histograms for all numeric columns*
 
@@ -965,7 +965,7 @@ eda.plot_correlation_heatmap(new_data, column_of_interest='Price_binary')
 
 
 # **Data Modelling**
----
+
 
 
 *Drop columns for modelling purposes*
@@ -1783,7 +1783,7 @@ mod.plot_roc_curves(models, X_train_resampled, y_train_resampled, X_test, y_test
 
 
 # **Evaluation**
----
+
 ### **Base Model - Phone Specification Classifier (High-Spec or Low-Spec)**
 ---
 1. **Logistic Regression (LR)**:
@@ -1848,7 +1848,7 @@ Overall, both Decision Tree Classifier and Random Forest Classifier seem to be g
 
     - Enhance customer satisfaction by focusing on key features.
 
-# Conclusions
+# Conclusion
 ## Feature Recommendations
 
 
