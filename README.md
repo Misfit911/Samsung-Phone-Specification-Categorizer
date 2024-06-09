@@ -1874,7 +1874,30 @@ eda.plot_features_against_price(data, feature_y = 'Battery_numeric', color_featu
                                  plot_title = "Phone Price and Battery Capacity Recommendation")
 ```
 
+<p align="center">
+    <img src="student_files\RAM.png" alt="Interstate 5 North - King County South - AARoads - Washington" width="700" height="450" />
+</p>
+<p align="center"></p>
 
+<p align="center">
+    <img src="student_files\processor.png" alt="Interstate 5 North - King County South - AARoads - Washington" width="700" height="450" />
+</p>
+<p align="center"></p>
+
+<p align="center">
+    <img src="student_files\Screenshot 2024-06-09 073833.png" alt="Interstate 5 North - King County South - AARoads - Washington" width="700" height="450" />
+</p>
+<p align="center"></p>
+
+<p align="center">
+    <img src="student_files\Screenshot 2024-06-09 073847.png" alt="Interstate 5 North - King County South - AARoads - Washington" width="700" height="450" />
+</p>
+<p align="center"></p>
+
+<p align="center">
+    <img src="student_files\Screenshot 2024-06-09 073904.png" alt="Interstate 5 North - King County South - AARoads - Washington" width="700" height="450" />
+</p>
+<p align="center"></p>
 
 
 
